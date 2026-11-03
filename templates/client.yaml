@@ -1,0 +1,73 @@
+# ============================================================
+#  __NAME__  -  Clash.Meta / mihomo 客户端配置
+#  需要新内核：Clash.Meta / mihomo / Clash Verge Rev / Stash
+#  普通老版 Clash 不支持 hysteria2 / reality / anytls！
+#  （AnyTLS 相关行由 lib/client.sh 按 ENABLE_ANYTLS 保留或删除）
+# ============================================================
+
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: true
+
+proxies:
+  # 主力候选：Reality（TCP，稳）
+  - name: "__NAME__-Reality"
+    type: vless
+    server: __IP__
+    port: __REALITY_PORT__
+    uuid: __UUID__
+    network: tcp
+    udp: true
+    tls: true
+    flow: xtls-rprx-vision
+    servername: __REALITY_SNI__
+    client-fingerprint: chrome
+    reality-opts:
+      public-key: __REALITY_PUBLIC_KEY__
+      short-id: __REALITY_SHORT_ID__
+
+  # 备用：Hysteria2（UDP，自适应带宽）
+  - name: "__NAME__-Hy2"
+    type: hysteria2
+    server: __IP__
+    port: __HY2_PORT__
+    password: '__HY2_PASSWORD__'
+    sni: __HY2_SNI__
+    skip-cert-verify: true
+
+  # 备用：AnyTLS（TCP，抗 TLS-in-TLS 识别，自签证书）  #@anytls
+  - name: "__NAME__-AnyTLS"  #@anytls
+    type: anytls  #@anytls
+    server: __IP__  #@anytls
+    port: __ANYTLS_PORT__  #@anytls
+    password: '__ANYTLS_PASSWORD__'  #@anytls
+    sni: __ANYTLS_SNI__  #@anytls
+    client-fingerprint: chrome  #@anytls
+    udp: true  #@anytls
+    skip-cert-verify: true  #@anytls
+
+proxy-groups:
+  - name: "PROXY"
+    type: select
+    proxies:
+      - "__NAME__-Reality"
+      - "__NAME__-Hy2"
+      - "__NAME__-AnyTLS"  #@anytls
+      - "AUTO"
+
+  - name: "AUTO"
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    proxies:
+      - "__NAME__-Reality"
+      - "__NAME__-Hy2"
+      - "__NAME__-AnyTLS"  #@anytls
+
+rules:
+  - GEOIP,LAN,DIRECT
+  - GEOIP,CN,DIRECT
+  - MATCH,PROXY
