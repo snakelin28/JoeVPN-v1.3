@@ -1,0 +1,5 @@
+# 运行时生成的文件，含凭据，绝不能提交
+clients/*
+!clients/.gitkeep
+backups/
+*.tar.gz
